@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.SceneManagement;
 
 namespace Editor
 {
@@ -12,7 +15,7 @@ namespace Editor
         public static void Build()
         {
             //Application.unityVersion
-            Debug.Log($"{Builder.EscapedUnityVersion()}");
+            
             
         }
 
@@ -27,10 +30,8 @@ namespace Editor
             
         }
 
-        public class Builder
+        public class SampleConfig
         {
-            public string AppName = $"VRTestApp{EscapedUnityVersion()}";
-            public BuildOptions BuildOptions = BuildOptions.None;
             public static string[] ScenesInApp()
             {
                 List<string> scenes = new List<string>();
@@ -42,29 +43,70 @@ namespace Editor
 
                 return scenes.ToArray();
             }
-            public static string EscapedUnityVersion()
+            private static string EscapedUnityVersion()
             {
                 return Application.unityVersion.Replace(".", "_");
             }
-            public void BuildAndroid()
+
+            private static string EscapePartialBundleID(string bundleid)
             {
-                //Application.identifier = $"com.htc.{appName}"
-                if (Application.levelCount == 0)
+                
+                StringBuilder sb = new StringBuilder();
+                foreach (var c in bundleid)
+                {
+                    if (char.IsLetterOrDigit(c))
+                    {
+                        sb.Append(c);
+                    }
+                }
+
+                return sb.ToString();
+            }
+            public static BuildConfig GetSampleConfig()
+            {
+                var appName = $"VRTestApp{EscapedUnityVersion()}";
+                return new BuildConfig()
+                {
+                    AppName = appName,
+                    BundleID = $"com.htc.{EscapePartialBundleID(appName)}",
+                    
+                    BuildTarget = BuildTarget.Android,
+                    BuildTargetGroup = BuildTargetGroup.Android,
+                    Scenes = new List<string>(ScenesInApp()),
+                };
+            }
+        }
+        public class BuildConfig
+        {
+            public string AppName;
+            public string BundleID; //not used on pc
+            
+            public BuildTarget BuildTarget;
+            public BuildTargetGroup BuildTargetGroup;
+            public List<string> Scenes;
+            
+            public BuildOptions BuildOptions = BuildOptions.None;
+        }
+        public class Builder
+        {
+            
+            public void Build(BuildConfig buildConfig)
+            {
+                if (SceneManager.sceneCountInBuildSettings == 0)
                 {
                     throw new InvalidOperationException("No levels set in player settings");
                 }
-
-                var bundleIdentifier = $"com.htc.{AppName}";
-                //PlayerSettings.applicationIdentifier = bundleIdentifier;
-                PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android,bundleIdentifier);
-                //Application.productName = AppName;
-                var apkName = $"{bundleIdentifier.Replace(".", "_")}.apk";
+                
+                PlayerSettings.SetApplicationIdentifier(buildConfig.BuildTargetGroup,buildConfig.BundleID);
+                
                 const string buildDirName = "Builds";
                 if (!Directory.Exists(buildDirName))
                     Directory.CreateDirectory(buildDirName);
+                
+                var apkName = $"{buildConfig.BundleID.Replace(".", "_")}.apk";
                 BuildPipeline.BuildPlayer(new BuildPlayerOptions()
                 {
-                    target = BuildTarget.Android, scenes = ScenesInApp(), locationPathName = $"{buildDirName}/{apkName}",options = BuildOptions
+                    target = BuildTarget.Android, scenes = buildConfig.Scenes.ToArray(), locationPathName = $"{buildDirName}/{apkName}",options = buildConfig.BuildOptions
                 });
             }
         }
