@@ -1,0 +1,15 @@
+{
+  "name": "com.htc.experimental.bootstrap",
+  "displayName": "WaveBootstrap",
+  "version": "0.0.1",
+  "unity": "2020.1",
+  "unityRelease": "0a10",
+  "description": "Experemental utilities for bootstrapping unity projects with wave.",
+  "keywords": [
+    "WaveXR",
+    "VR",
+    "XR",
+    "HTC",
+    "Vive"
+  ]
+}
