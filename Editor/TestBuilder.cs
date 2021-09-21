@@ -11,26 +11,8 @@ namespace Editor
 {
     public class TestBuilder
     {
-        [MenuItem("TestBuilder/TestBuild")]
-        public static void Build()
-        {
-            //Application.unityVersion
-            
-            
-        }
 
-        [MenuItem("TestBuilder/TestResolve 1")]
-        public static void TestResolve()
-        {
-            
-        }
-        [MenuItem("TestBuilder/TestResolve 2")]
-        public static void TestResolve2()
-        {
-            
-        }
-
-        public class SampleConfig
+        public class SampleConfigBuilder
         {
             public static string[] ScenesInApp()
             {
